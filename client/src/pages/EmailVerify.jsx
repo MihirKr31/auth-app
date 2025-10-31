@@ -55,7 +55,7 @@ const EmailVerify = () => {
       }
     }
     catch(error){
-      toString.error(error.message)
+      toast.error(error.message)
     }
   }
 

@@ -7,11 +7,12 @@ export const AppContext = createContext();
 
 const AppContextProvider = ({ children }) => {
 
-  axios.defaults.withCredentials = true;
+  axios.defaults.withCredentials = true;//Configures Axios to send cookies (like session tokens) with every request, essential for authentication.
 
   const backend_url = import.meta.env.VITE_BACKEND_URL;
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [userData, setUserData] = useState(false);
+
+  const [isLoggedIn, setIsLoggedIn] = useState(false); //boolean indicating if the user is authenticated.
+  const [userData, setUserData] = useState(false); //the actual user information fetched from backend; initially false.
   
   const getAuthState = async ()=>{
 
