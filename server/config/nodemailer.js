@@ -11,4 +11,12 @@ const transporter = nodemailer.createTransport({
      
 })
 
+transporter.verify(function(error, success) {
+    if (error) {
+        console.log('❌ SMTP Error:', error.message);
+    } else {
+        console.log('✅ SMTP is ready - Brevo connected successfully!');
+    }
+});
+
 export default transporter;

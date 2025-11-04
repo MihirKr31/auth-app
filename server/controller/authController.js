@@ -225,43 +225,21 @@ export const sendResetOtp = async (req, res) => {
 };
 
 export const resetPassword = async (req, res) => {
-  const { email, otp, newPassword } = req.body;
+  const { newPassword } = req.body;
 
-  if (!email || !otp || !newPassword) {
+  if (!newPassword) {
     return res.json({
       success: false,
-      message: " Email, otp and password field are required",
+      message: "New password is required",
     });
   }
 
   try {
-    //first of all we have to verify the reset otp
-    const user = await userModel.findOne({ email });
-    if (!user) {
-      return res.json({
-        success: false,
-        message: "user with this email does not exist",
-      });
-    }
-    if (!user.resetOtp) {
-      return res.json({
-        success: false,
-        message: "No OTP found. Please request a new one.",
-      });
-    }
+    // req.user is already available from middleware
+    const user = req.user;
 
-    if (user.resetOtp.toString().trim() !== otp.toString().trim()) {
-      return res.json({ success: false, message: "Invalid OTP" });
-    }
-
-    if (user.resetOtpExpireAt < Date.now()) {
-      return res.json({ success: false, message: "OTP expired" });
-    }
-
-    //now since it is verified we will change the password
-
+    // Hash and update password
     const hashedPassword = await bcrypt.hash(newPassword, 10);
-
     user.password = hashedPassword;
     user.resetOtp = "";
     user.resetOtpExpireAt = 0;
@@ -270,9 +248,13 @@ export const resetPassword = async (req, res) => {
 
     return res.json({
       success: true,
-      message: "Password is successfully updated",
+      message: "Password reset successfully",
     });
   } catch (error) {
-    return res.json({ success: false, message: error.message });
+    return res.json({ 
+      success: false, 
+      message: error.message 
+    });
   }
 };
+

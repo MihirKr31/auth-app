@@ -16,9 +16,9 @@ const ResetPassword = () => {
   const[newPassword, setNewPassword] = useState('')
   const inputRefs = useRef([]);
 
-  const[isEmailSent,setIsEmailSent]=useState('')
+  const[isEmailSent,setIsEmailSent]=useState(false)
   const[otp,setOtp] = useState('')
-  const[isOtpSubmitted,setIsOtpSumbitted] = useState(false)
+  const[isOtpSubmitted,setIsOtpSubmitted] = useState(false)
 
   const handleInput =(e,index)=>{
     if(e.target.value.length>0 && index < inputRefs.current.length-1){
@@ -46,13 +46,19 @@ const ResetPassword = () => {
   const onSubmitEmail = async (e)  =>{
 
     e.preventDefault();
+
     try{
+
       const {data} = await axios.post(backend_url + '/api/auth/send-reset-otp',{email})
       data.success ? toast.success(data.message) : toast.error(data.message)
       data.success &&  setIsEmailSent(true)
     }
     catch(error)
     {
+      console.error('Error caught:', error);
+      console.error('Error message:', error.message);
+      console.error('Error response:', error.response);
+
       toast.error(error.message)
     }
   }
@@ -61,21 +67,33 @@ const ResetPassword = () => {
     e.preventDefault();
     const otpArray = inputRefs.current.map(e=> e.value).join('');
     setOtp(otpArray)
-    setIsOtpSumbitted(true)
+    setIsOtpSubmitted(true)
   }
 
-  const onSubmitNewPassword = async(e)=>{
+  const onSubmitNewPassword = async(e) => {
     e.preventDefault();
     try{
+      // Get OTP from state (or re-read from inputs as fallback)
       const otpValue = otp || inputRefs.current.map(e => e.value).join('');
-      const {data} = await axios.post(backend_url + '/api/auth/reset-password', {email,otp:otpValue,newPassword})
-      data.success ? toast.success(data.message) : toast.error(data.message)
-      data.success && navigate('/login')
-    }catch(error)
-    {
+      
+      // Send all three: email, otp, newPassword
+      const {data} = await axios.post(backend_url + '/api/auth/reset-password', {
+        email,
+        otp: otpValue,
+        newPassword
+      })
+      
+      if(data.success) {
+        toast.success(data.message)
+        navigate('/login')
+      } else {
+        toast.error(data.message)
+      }
+    } catch(error) {
       toast.error(error.message)
     }
   }
+
 
   return (
     <div className='flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-200 to-purple-400 '>
@@ -92,7 +110,7 @@ const ResetPassword = () => {
                 <img src={assets.mail_icon} alt="" className='w-3 h-3' />
                 <input type="email" placeholder='Email Id' className='bg-transparent outline-none text-white' value={email} onChange={e=> setEmail(e.target.value)} required />
               </div>
-              <button className='w-full py-2.5 bg-gradient-to-r from-indigo-500 to-indigo-900 text-white rounded-full mt-3'>Submit</button>
+              <button type="submit" className='w-full py-2.5 bg-gradient-to-r from-indigo-500 to-indigo-900 text-white rounded-full mt-3'>Submit</button>
           </form>
     } 
 
@@ -110,7 +128,7 @@ const ResetPassword = () => {
                   />
                 ))}
               </div>
-              <button className='w-full py-2.5 bg-gradient-to-r from-indigo-500 to-indigo-900 text-white rounded-full mt-3'>Submit</button>
+              <button type="submit" className='w-full py-2.5 bg-gradient-to-r from-indigo-500 to-indigo-900 text-white rounded-full mt-3'>Submit</button>
           </form>
       }
 
@@ -121,9 +139,9 @@ const ResetPassword = () => {
 
               <div className='mb-4 flex items-center gap-3 w-full px-5 py-2.5 rounded-full bg-[#333A5C]'>
                 <img src={assets.lock_icon} alt="" className='w-3 h-3' />
-                <input type="passwprd" placeholder='Password' className='bg-transparent outline-none text-white' value={newPassword} onChange={e=> setNewPassword(e.target.value)} required />
+                <input type="password" placeholder='Password' className='bg-transparent outline-none text-white' value={newPassword} onChange={e=> setNewPassword(e.target.value)} required />
               </div>
-              <button className='w-full py-2.5 bg-gradient-to-r from-indigo-500 to-indigo-900 text-white rounded-full mt-3'>Submit</button>
+              <button type="submit" className='w-full py-2.5 bg-gradient-to-r from-indigo-500 to-indigo-900 text-white rounded-full mt-3'>Submit</button>
           </form>
       }
           
